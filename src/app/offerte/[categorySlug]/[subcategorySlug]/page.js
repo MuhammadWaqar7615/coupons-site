@@ -4,21 +4,69 @@ import Footer from "@/components/layout/Footer";
 import DealCard from "@/components/home/DealCard";
 import Link from "next/link";
 
+const safeDecode = (str) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
+const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+
+export async function generateMetadata({ params }) {
+  const { categorySlug, subcategorySlug } = await params;
+  const decodedCatSlug = safeDecode(categorySlug);
+  const decodedSubSlug = safeDecode(subcategorySlug);
+
+  try {
+    const catRes = await fetch(
+      `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!catRes.ok) return { title: "Categoria non trovata | CodiceSconto" };
+
+    const catData = await catRes.json();
+    const category = catData.category;
+    if (!category) return { title: "Categoria non trovata | CodiceSconto" };
+
+    const allSubs = [...(category.subcategories || []), ...(category.subs || [])];
+    const subcategory = allSubs.find(
+      (s) =>
+        s.slug === subcategorySlug ||
+        s.slug === decodedSubSlug ||
+        s.slug?.toLowerCase() === decodedSubSlug.toLowerCase()
+    );
+
+    if (!subcategory) return { title: "Sottocategoria non trovata | CodiceSconto" };
+
+    return {
+      title: subcategory.seoTitle || `${subcategory.title} Offerte e Codici Sconto | CodiceSconto`,
+      description: subcategory.seoDescription || subcategory.description || `Scopri le migliori offerte e codici sconto per ${subcategory.title}.`,
+    };
+  } catch {
+    return { title: "CodiceSconto" };
+  }
+}
 
 export const revalidate = 60;
 
 export default async function SubcategoryPage({ params }) {
   const { categorySlug, subcategorySlug } = await params;
-
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+  const decodedCatSlug = safeDecode(categorySlug);
+  const decodedSubSlug = safeDecode(subcategorySlug);
 
   // 1. Fetch category details
-  const catRes = await fetch(`${backendUrl}/api/categories/${encodeURIComponent(categorySlug)}`, { next: { revalidate: 60 } });
-  
+  const catRes = await fetch(
+    `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
+    { next: { revalidate: 60 } }
+  );
+
   if (!catRes.ok) {
     notFound();
   }
-  
+
   const catData = await catRes.json();
   const category = catData.category;
 
@@ -26,35 +74,59 @@ export default async function SubcategoryPage({ params }) {
     notFound();
   }
 
-  // 2. Find subcategory in category
-  const subcategory = category.subcategories?.find(s => s.slug === subcategorySlug && s.status === "enabled");
+  // 2. Find subcategory in category (check both decoded and raw slug, case-insensitive)
+  const allSubcategories = [...(category.subcategories || []), ...(category.subs || [])];
+  const subcategory = allSubcategories.find(
+    (s) =>
+      s.status === "enabled" &&
+      (s.slug === subcategorySlug ||
+        s.slug === decodedSubSlug ||
+        s.slug?.toLowerCase() === subcategorySlug?.toLowerCase() ||
+        s.slug?.toLowerCase() === decodedSubSlug.toLowerCase())
+  );
 
   if (!subcategory) {
     notFound();
   }
 
-  // 3. Fetch stores for the parent category (which includes their active coupons and subcategory associations)
-  const storesRes = await fetch(`${backendUrl}/api/stores?category=${encodeURIComponent(categorySlug)}&active=true`, { next: { revalidate: 60 } });
+  // 3. Fetch active stores for the parent category
+  const storesRes = await fetch(
+    `${backendUrl}/api/stores?category=${encodeURIComponent(decodedCatSlug)}&active=true`,
+    { next: { revalidate: 60 } }
+  );
   let coupons = [];
-  
+
   if (storesRes.ok) {
     const storesData = await storesRes.json();
     const allCategoryStores = storesData.stores || [];
-    
+
     // Filter stores that belong to this subcategory
-    const subcategoryStores = allCategoryStores.filter(store => 
-      store.subcategories && store.subcategories.includes(subcategory._id)
+    const subcategoryStores = allCategoryStores.filter(
+      (store) =>
+        store.subcategories &&
+        (store.subcategories.includes(subcategory._id) ||
+          store.subcategories.includes(subcategory.id))
     );
-    
+
     // 4. Extract and flatten coupons from the subcategory stores
-    subcategoryStores.forEach(store => {
+    subcategoryStores.forEach((store) => {
       if (store.coupons && Array.isArray(store.coupons)) {
-        store.coupons.forEach(coupon => {
-          coupons.push({
-            ...coupon,
-            storeId: { id: store._id, name: store.name, slug: store.slug, logoPath: store.logoPath, _id: store._id },
-            store: { id: store._id, name: store.name, slug: store.slug, logoPath: store.logoPath, _id: store._id },
-          });
+        store.coupons.forEach((coupon) => {
+          if (coupon.isActive !== false) {
+            coupons.push({
+              ...coupon,
+              store: store.name,
+              logo: store.logoPath || "/images/placeholder.png",
+              dealUrl: store.slug ? `/store/${store.slug}` : "#",
+              storeId: {
+                id: store._id,
+                name: store.name,
+                slug: store.slug,
+                logoPath: store.logoPath,
+                _id: store._id,
+              },
+            });
+          }
         });
       }
     });
@@ -87,12 +159,23 @@ export default async function SubcategoryPage({ params }) {
 
       <main className="flex-grow w-full mb-12">
         <div className="max-w-[1040px] mx-auto px-4 sm:px-6">
-
           {/* Breadcrumb */}
           <div className="text-[12px] text-gray-500 mb-6 border-b border-[#eaeaea] pb-4">
-            <Link href="/" className="hover:underline cursor-pointer">CodiceSconto</Link> {'>'}{" "}
-            <Link href="/offerte" className="hover:underline cursor-pointer">Categorie</Link> {'>'}{" "}
-            <Link href={`/offerte/${category.slug}`} className="hover:underline cursor-pointer">{category.title}</Link> {'>'}{" "}
+            <Link href="/" className="hover:underline cursor-pointer">
+              CodiceSconto
+            </Link>{" "}
+            {">"}{" "}
+            <Link href="/offerte" className="hover:underline cursor-pointer">
+              Categorie
+            </Link>{" "}
+            {">"}{" "}
+            <Link
+              href={`/offerte/${category.slug}`}
+              className="hover:underline cursor-pointer"
+            >
+              {category.title}
+            </Link>{" "}
+            {">"}{" "}
             <span className="text-gray-800 font-semibold">{subcategory.title}</span>
           </div>
 
@@ -108,7 +191,7 @@ export default async function SubcategoryPage({ params }) {
               {coupons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[10px]">
                   {coupons.map((coupon) => (
-                    <DealCard key={coupon._id} deal={coupon} />
+                    <DealCard key={coupon._id || coupon.id} deal={coupon} />
                   ))}
                 </div>
               ) : (
@@ -118,7 +201,6 @@ export default async function SubcategoryPage({ params }) {
               )}
             </div>
           </div>
-
         </div>
       </main>
 

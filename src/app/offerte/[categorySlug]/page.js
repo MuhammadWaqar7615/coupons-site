@@ -4,21 +4,59 @@ import Footer from "@/components/layout/Footer";
 import DealCard from "@/components/home/DealCard";
 import Link from "next/link";
 
+const safeDecode = (str) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
+const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+
+export async function generateMetadata({ params }) {
+  const { categorySlug } = await params;
+  const decodedCatSlug = safeDecode(categorySlug);
+
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!res.ok) return { title: "Categoria non trovata | CodiceSconto" };
+
+    const data = await res.json();
+    const category = data.category;
+    if (!category || category.status !== "enabled") {
+      return { title: "Categoria non trovata | CodiceSconto" };
+    }
+
+    return {
+      title: category.seoTitle || `${category.title} Offerte e Codici Sconto | CodiceSconto`,
+      description: category.seoDescription || category.description || `Scopri tutte le offerte e i codici sconto per ${category.title}.`,
+    };
+  } catch {
+    return { title: "CodiceSconto" };
+  }
+}
 
 export const revalidate = 60;
 
 export default async function CategoryPage({ params }) {
   const { categorySlug } = await params;
-
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+  const decodedCatSlug = safeDecode(categorySlug);
 
   // 1. Fetch category details
-  const catRes = await fetch(`${backendUrl}/api/categories/${encodeURIComponent(categorySlug)}`, { next: { revalidate: 60 } });
-  
+  const catRes = await fetch(
+    `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
+    { next: { revalidate: 60 } }
+  );
+
   if (!catRes.ok) {
     notFound();
   }
-  
+
   const catData = await catRes.json();
   const category = catData.category;
 
@@ -27,22 +65,35 @@ export default async function CategoryPage({ params }) {
   }
 
   // 2. Fetch stores for this category (which includes their active coupons)
-  const storesRes = await fetch(`${backendUrl}/api/stores?category=${encodeURIComponent(categorySlug)}&active=true`, { next: { revalidate: 60 } });
+  const storesRes = await fetch(
+    `${backendUrl}/api/stores?category=${encodeURIComponent(decodedCatSlug)}&active=true`,
+    { next: { revalidate: 60 } }
+  );
   let coupons = [];
-  
+
   if (storesRes.ok) {
     const storesData = await storesRes.json();
     const stores = storesData.stores || [];
-    
+
     // 3. Extract and flatten coupons from the stores
-    stores.forEach(store => {
+    stores.forEach((store) => {
       if (store.coupons && Array.isArray(store.coupons)) {
-        store.coupons.forEach(coupon => {
-          coupons.push({
-            ...coupon,
-            storeId: { id: store._id, name: store.name, slug: store.slug, logoPath: store.logoPath, _id: store._id },
-            store: { id: store._id, name: store.name, slug: store.slug, logoPath: store.logoPath, _id: store._id },
-          });
+        store.coupons.forEach((coupon) => {
+          if (coupon.isActive !== false) {
+            coupons.push({
+              ...coupon,
+              store: store.name,
+              logo: store.logoPath || "/images/placeholder.png",
+              dealUrl: store.slug ? `/store/${store.slug}` : "#",
+              storeId: {
+                id: store._id,
+                name: store.name,
+                slug: store.slug,
+                logoPath: store.logoPath,
+                _id: store._id,
+              },
+            });
+          }
         });
       }
     });
@@ -75,11 +126,16 @@ export default async function CategoryPage({ params }) {
 
       <main className="flex-grow w-full mb-12">
         <div className="max-w-[1040px] mx-auto px-4 sm:px-6">
-
           {/* Breadcrumb */}
           <div className="text-[12px] text-gray-500 mb-6 border-b border-[#eaeaea] pb-4">
-            <Link href="/" className="hover:underline cursor-pointer">CodiceSconto</Link> {'>'}{" "}
-            <Link href="/offerte" className="hover:underline cursor-pointer">Categorie</Link> {'>'}{" "}
+            <Link href="/" className="hover:underline cursor-pointer">
+              CodiceSconto
+            </Link>{" "}
+            {">"}{" "}
+            <Link href="/offerte" className="hover:underline cursor-pointer">
+              Categorie
+            </Link>{" "}
+            {">"}{" "}
             <span className="text-gray-800 font-semibold">{category.title}</span>
           </div>
 
@@ -95,7 +151,7 @@ export default async function CategoryPage({ params }) {
               {coupons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[10px]">
                   {coupons.map((coupon) => (
-                    <DealCard key={coupon._id} deal={coupon} />
+                    <DealCard key={coupon._id || coupon.id} deal={coupon} />
                   ))}
                 </div>
               ) : (
@@ -105,7 +161,6 @@ export default async function CategoryPage({ params }) {
               )}
             </div>
           </div>
-
         </div>
       </main>
 

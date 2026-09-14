@@ -1,4 +1,4 @@
-import React from "react";
+import Link from "next/link";
 
 /**
  * Individual store item in the directory grid.
@@ -7,8 +7,8 @@ import React from "react";
  */
 function StoreItem({ store }) {
   return (
-    <a
-      href={`/negozi/${store.slug}`}
+    <Link
+      href={`/store/${store.slug ? encodeURIComponent(store.slug) : ""}`}
       className="flex items-center gap-[10px] py-[12px] px-[8px] border-b border-[#ebebeb] hover:bg-[#f8f4f7] transition-colors duration-150 group"
       style={{ minHeight: '56px' }}
     >

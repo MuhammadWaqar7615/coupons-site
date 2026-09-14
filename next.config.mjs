@@ -12,6 +12,15 @@ const backendUrl = (() => {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactCompiler: true,
+  async redirects() {
+    return [
+      {
+        source: "/negozi/:slug+",
+        destination: "/store/:slug+",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

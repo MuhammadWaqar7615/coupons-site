@@ -69,26 +69,45 @@ function Navbar() {
   }, [searchQuery]);
 
   const allSuggestions = [
-    ...searchResults.stores.map(s => ({ ...s, url: `/store/${s.slug}`, type: 'store' })),
-    ...searchResults.coupons.map(c => ({ ...c, url: `/store/${c.storeId?.slug || ''}`, type: 'coupon' }))
+    ...searchResults.stores.map(s => ({
+      ...s,
+      url: `/store/${s.slug ? encodeURIComponent(s.slug) : ''}`,
+      type: 'store',
+    })),
+    ...searchResults.coupons.map(c => {
+      const slug = c.storeId?.slug || c.store?.slug;
+      return {
+        ...c,
+        url: slug ? `/store/${encodeURIComponent(slug)}` : '#',
+        type: 'coupon',
+      };
+    }),
   ];
 
   const handleKeyDown = (e) => {
-    if (!isSearchOpen || allSuggestions.length === 0) return;
-
     if (e.key === 'ArrowDown') {
+      if (!isSearchOpen || allSuggestions.length === 0) return;
       e.preventDefault();
       setSelectedIndex(prev => (prev < allSuggestions.length - 1 ? prev + 1 : 0));
     } else if (e.key === 'ArrowUp') {
+      if (!isSearchOpen || allSuggestions.length === 0) return;
       e.preventDefault();
       setSelectedIndex(prev => (prev > 0 ? prev - 1 : allSuggestions.length - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const targetItem = selectedIndex >= 0 ? allSuggestions[selectedIndex] : allSuggestions[0];
-      if (targetItem) {
+      const targetItem =
+        selectedIndex >= 0
+          ? allSuggestions[selectedIndex]
+          : allSuggestions.length > 0 && isSearchOpen
+          ? allSuggestions[0]
+          : null;
+      if (targetItem && targetItem.url && targetItem.url !== '#' && targetItem.url !== '/store/') {
         setIsSearchOpen(false);
         setSearchQuery("");
         router.push(targetItem.url);
+      } else if (searchQuery.trim().length > 0) {
+        setIsSearchOpen(false);
+        router.push(`/cerca?q=${encodeURIComponent(searchQuery.trim())}`);
       }
     }
   };
@@ -114,7 +133,15 @@ function Navbar() {
               className="w-full flex relative"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleKeyDown({ key: 'Enter', preventDefault: () => { } });
+                if (selectedIndex >= 0 && allSuggestions[selectedIndex]?.url && allSuggestions[selectedIndex].url !== '#') {
+                  const targetItem = allSuggestions[selectedIndex];
+                  setIsSearchOpen(false);
+                  setSearchQuery("");
+                  router.push(targetItem.url);
+                } else if (searchQuery.trim().length > 0) {
+                  setIsSearchOpen(false);
+                  router.push(`/cerca?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
               }}
             >
               <input
@@ -132,12 +159,8 @@ function Navbar() {
               />
               <button
                 type="submit"
-                className="absolute right-0 top-0 bottom-0 text-gray-500 w-10 flex items-center justify-center hover:text-accent"
+                className="absolute right-0 top-0 bottom-0 text-gray-500 w-10 flex items-center justify-center hover:text-accent cursor-pointer"
                 aria-label="Cerca"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleKeyDown({ key: 'Enter', preventDefault: () => { } });
-                }}
               >
                 <svg className="h-[16px] w-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
