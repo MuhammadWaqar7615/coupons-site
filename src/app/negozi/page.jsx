@@ -11,14 +11,16 @@ export const revalidate = 60;
 
 export default async function NegoziPage() {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
-  const res = await fetch(`${backendUrl}/api/stores`, { next: { revalidate: 60 } });
-  
-  if (!res.ok) {
-    throw new Error('Failed to fetch stores');
+  let stores = [];
+  try {
+    const res = await fetch(`${backendUrl}/api/stores`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const data = await res.json();
+      stores = data.stores || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch stores:", err);
   }
-  
-  const data = await res.json();
-  const stores = data.stores || [];
 
   return <NegoziClient stores={stores} />;
 }

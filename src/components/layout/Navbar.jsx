@@ -44,11 +44,13 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
+    let active = true;
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery.length >= 2) {
         fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
-          .then(res => res.json())
+          .then(res => (res.ok ? res.json() : { stores: [], coupons: [] }))
           .then(data => {
+            if (!active) return;
             setSearchResults(data);
             setIsSearchOpen(true);
             setSelectedIndex(-1);
@@ -60,7 +62,10 @@ function Navbar() {
         setSelectedIndex(-1);
       }
     }, 300);
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      active = false;
+      clearTimeout(delayDebounceFn);
+    };
   }, [searchQuery]);
 
   const allSuggestions = [

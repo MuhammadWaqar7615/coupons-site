@@ -13,14 +13,16 @@ export const revalidate = 60;
 
 export default async function BlogPage() {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
-  const res = await fetch(`${backendUrl}/api/blog?status=enabled`, { next: { revalidate: 60 } });
-  
-  if (!res.ok) {
-    throw new Error('Failed to fetch blog posts');
+  let posts = [];
+  try {
+    const res = await fetch(`${backendUrl}/api/blog?status=enabled`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const data = await res.json();
+      posts = data.posts || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch blog posts:", err);
   }
-  
-  const data = await res.json();
-  const posts = data.posts || [];
   
   // The first post is the featured post, the rest are shown in the grid
   const featuredPost = posts.length > 0 ? posts[0] : null;

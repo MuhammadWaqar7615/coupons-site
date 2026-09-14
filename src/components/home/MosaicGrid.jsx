@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import DealCard from './DealCard';
 
-function MosaicGrid() {
-  const [deals, setDeals] = useState([]);
+function MosaicGrid({ deals: propsDeals }) {
+  const [fetchedDeals, setFetchedDeals] = useState([]);
 
   useEffect(() => {
+    if (propsDeals !== undefined) return;
+    let isMounted = true;
     fetch("/api/features")
       .then((res) => res.json())
       .then((data) => {
-        const fetchedDeals = (data.features || [])
+        if (!isMounted) return;
+        const mapped = (data.features || [])
           .filter(feature => feature.homepageSection === "featured")
           .map((feature) => ({
             store: feature.storeId?.name || "Store",
@@ -21,10 +24,15 @@ function MosaicGrid() {
             dealUrl: feature.storeId?.slug ? `/store/${feature.storeId.slug}` : "#",
             logo: feature.storeId?.logoPath || "",
           }));
-        setDeals(fetchedDeals);
+        setFetchedDeals(mapped);
       })
       .catch((err) => console.error("Failed to fetch features", err));
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [propsDeals]);
+
+  const deals = propsDeals !== undefined ? propsDeals : fetchedDeals;
 
   return (
     <section className="py-12 bg-white">

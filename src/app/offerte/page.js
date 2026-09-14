@@ -7,14 +7,16 @@ export const revalidate = 60;
 
 export default async function OffertePage() {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
-  const res = await fetch(`${backendUrl}/api/categories?status=enabled`, { next: { revalidate: 60 } });
-  
-  if (!res.ok) {
-    throw new Error('Failed to fetch categories');
+  let rawCategories = [];
+  try {
+    const res = await fetch(`${backendUrl}/api/categories?status=enabled`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const data = await res.json();
+      rawCategories = data.categories || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch categories:", err);
   }
-  
-  const data = await res.json();
-  const rawCategories = data.categories || [];
 
   const categories = rawCategories.map((cat) => ({
     ...cat,

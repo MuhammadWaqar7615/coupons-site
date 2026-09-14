@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const MONGODB_URI = "mongodb+srv://mwaqar7615_db_user:yErdfgY86hCEjg6Y@cluster0.etu0ai0.mongodb.net/codice_sconto?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/codice_sconto";
 
 async function run() {
   await mongoose.connect(MONGODB_URI);

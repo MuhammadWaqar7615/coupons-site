@@ -3,14 +3,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-function HeroSection() {
+function HeroSection({ initialBadges = [], initialSlides = [] }) {
   const scrollContainerRef = useRef(null);
-  const [badges, setBadges] = useState([]);
-  const [mockSlides, setMockSlides] = useState([]);
+  const [fetchedBadges, setFetchedBadges] = useState([]);
+  const [fetchedSlides, setFetchedSlides] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isBadgesHovered, setIsBadgesHovered] = useState(false);
 
+  const hasInitialData = initialSlides.length > 0 || initialBadges.length > 0;
+  const badges = hasInitialData ? initialBadges : fetchedBadges;
+  const mockSlides = hasInitialData ? initialSlides : fetchedSlides;
+
   useEffect(() => {
+    if (hasInitialData) return;
+    let isMounted = true;
     Promise.all([
       fetch("/api/sliders?status=enabled"),
       fetch("/api/badges"),
@@ -20,20 +26,25 @@ function HeroSection() {
         badges: badgesResponse.ok ? (await badgesResponse.json()).badges : [],
       }))
       .then((data) => {
-        setBadges((data.badges || []).map((badge) => ({
+        if (!isMounted) return;
+        setFetchedBadges((data.badges || []).map((badge) => ({
           name: badge.name,
           logo: badge.image,
         })));
-        setMockSlides((data.sliders || []).map((slider) => ({
-        id: slider._id,
-        image: slider.image,
-        logo: slider.logo || slider.image,
-        text: slider.description || slider.title,
-        discount: slider.discount || slider.title,
-        link: slider.link || "#",
+        setFetchedSlides((data.sliders || []).map((slider) => ({
+          id: slider._id,
+          image: slider.image,
+          logo: slider.logo || slider.image,
+          text: slider.description || slider.title,
+          discount: slider.discount || slider.title,
+          link: slider.link || "#",
         })));
-      });
-  }, []);
+      })
+      .catch((err) => console.error("Failed to fetch sliders/badges:", err));
+    return () => {
+      isMounted = false;
+    };
+  }, [hasInitialData]);
 
   useEffect(() => {
     if (mockSlides.length < 2) return undefined;

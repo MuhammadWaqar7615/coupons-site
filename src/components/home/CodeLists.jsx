@@ -3,17 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-function CodeLists() {
-  const [newCodes, setNewCodes] = useState([]);
-  const [expiringCodes, setExpiringCodes] = useState([]);
+function CodeLists({ newCodes: propsNewCodes, expiringCodes: propsExpiringCodes }) {
+  const [fetchedNewCodes, setFetchedNewCodes] = useState([]);
+  const [fetchedExpiringCodes, setFetchedExpiringCodes] = useState([]);
 
   useEffect(() => {
+    if (propsNewCodes !== undefined && propsExpiringCodes !== undefined) return;
+    let isMounted = true;
     fetch("/api/features")
       .then((res) => res.json())
       .then((data) => {
+        if (!isMounted) return;
         const features = data.features || [];
         
-        const fetchedNewCodes = features
+        const mappedNew = features
           .filter(feature => feature.homepageSection === "new")
           .map(feature => ({
             tag: "",
@@ -22,7 +25,7 @@ function CodeLists() {
             dealUrl: feature.storeId?.slug ? `/store/${feature.storeId.slug}` : "#"
           }));
 
-        const fetchedExpiringCodes = features
+        const mappedExpiring = features
           .filter(feature => feature.homepageSection === "expiring")
           .map(feature => ({
             tag: "",
@@ -31,11 +34,17 @@ function CodeLists() {
             dealUrl: feature.storeId?.slug ? `/store/${feature.storeId.slug}` : "#"
           }));
 
-        setNewCodes(fetchedNewCodes);
-        setExpiringCodes(fetchedExpiringCodes);
+        setFetchedNewCodes(mappedNew);
+        setFetchedExpiringCodes(mappedExpiring);
       })
       .catch((err) => console.error("Failed to fetch features for CodeLists", err));
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [propsNewCodes, propsExpiringCodes]);
+
+  const newCodes = propsNewCodes !== undefined ? propsNewCodes : fetchedNewCodes;
+  const expiringCodes = propsExpiringCodes !== undefined ? propsExpiringCodes : fetchedExpiringCodes;
 
   return (
     <section className="py-12">

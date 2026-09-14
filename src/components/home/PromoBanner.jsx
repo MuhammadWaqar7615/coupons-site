@@ -2,19 +2,29 @@
 
 import React, { startTransition, useEffect, useState } from 'react';
 
-function PromoBanner() {
-  const [promoBanner, setPromoBanner] = useState(null);
+function PromoBanner({ promoBanner: propsPromoBanner }) {
+  const [fetchedPromoBanner, setFetchedPromoBanner] = useState(null);
 
   useEffect(() => {
+    if (propsPromoBanner !== undefined) return;
+    let isMounted = true;
     fetch("/api/promo-banners?status=enabled")
-      .then((response) => response.ok ? response.json() : { promoBanners: [] })
+      .then((response) => (response.ok ? response.json() : { promoBanners: [] }))
       .then((data) => {
+        if (!isMounted) return;
         startTransition(() => {
-          setPromoBanner(data.promoBanners?.[0] || null);
+          setFetchedPromoBanner(data.promoBanners?.[0] || null);
         });
       })
-      .catch(() => setPromoBanner(null));
-  }, []);
+      .catch(() => {
+        if (isMounted) setFetchedPromoBanner(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [propsPromoBanner]);
+
+  const promoBanner = propsPromoBanner !== undefined ? propsPromoBanner : fetchedPromoBanner;
 
   if (!promoBanner) return null;
 

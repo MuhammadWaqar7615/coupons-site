@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import ImageOfferCard from './ImageOfferCard';
 
-function SecondaryOffers() {
-  const [deals, setDeals] = useState([]);
+function SecondaryOffers({ deals: propsDeals }) {
+  const [fetchedDeals, setFetchedDeals] = useState([]);
 
   useEffect(() => {
+    if (propsDeals !== undefined) return;
+    let isMounted = true;
     fetch("/api/features")
       .then((res) => res.json())
       .then((data) => {
-        const fetchedDeals = (data.features || [])
+        if (!isMounted) return;
+        const mapped = (data.features || [])
           .filter(feature => feature.homepageSection === "secondary")
           .map((feature) => ({
             store: feature.storeId?.name || "Store",
@@ -22,10 +25,15 @@ function SecondaryOffers() {
             logo: feature.storeId?.logoPath || "/images/placeholder.png",
             image: feature.image || "/images/placeholder.png",
           }));
-        setDeals(fetchedDeals);
+        setFetchedDeals(mapped);
       })
       .catch((err) => console.error("Failed to fetch features", err));
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [propsDeals]);
+
+  const deals = propsDeals !== undefined ? propsDeals : fetchedDeals;
 
   return (
     <section className="py-12">

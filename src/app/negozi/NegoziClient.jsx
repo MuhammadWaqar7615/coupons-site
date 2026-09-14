@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useCallback } from "react";
+import React, { Suspense, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -42,32 +42,36 @@ function NegoziContent({ stores }) {
     ["X", "Y", "Z"]
   ];
 
-  // Group stores by first letter
-  const groupedStores = {};
-  alphabetLetters.forEach(letter => {
-    groupedStores[letter] = [];
-  });
+  // Group stores by first letter with memoization to avoid redundant grouping and sorting
+  const { groupedStores, storeCountTotal } = useMemo(() => {
+    const groups = {};
+    alphabetLetters.forEach(letter => {
+      groups[letter] = [];
+    });
 
-  // Filter based on cashback if needed. Since we don't have isCashback in the MongoDB schema yet,
-  // this would return empty if true. We leave the filter logic intact for future compatibility.
-  const baseStores = isCashbackOnly ? stores.filter(s => s.isCashback) : stores;
-  const storeCountTotal = baseStores.length;
+    // Filter based on cashback if needed. Since we don't have isCashback in the MongoDB schema yet,
+    // this would return empty if true. We leave the filter logic intact for future compatibility.
+    const baseStores = isCashbackOnly ? stores.filter(s => s.isCashback) : stores;
+    const countTotal = baseStores.length;
 
-  baseStores.forEach((store) => {
-    const firstChar = store.name.charAt(0).toUpperCase();
-    if (/[A-Z]/.test(firstChar)) {
-      if (!groupedStores[firstChar]) groupedStores[firstChar] = [];
-      groupedStores[firstChar].push(store);
-    } else {
-      if (!groupedStores["#"]) groupedStores["#"] = [];
-      groupedStores["#"].push(store);
-    }
-  });
+    baseStores.forEach((store) => {
+      const firstChar = store.name.charAt(0).toUpperCase();
+      if (/[A-Z]/.test(firstChar)) {
+        if (!groups[firstChar]) groups[firstChar] = [];
+        groups[firstChar].push(store);
+      } else {
+        if (!groups["#"]) groups["#"] = [];
+        groups["#"].push(store);
+      }
+    });
 
-  // Sort each group
-  Object.keys(groupedStores).forEach(key => {
-    groupedStores[key].sort((a, b) => a.name.localeCompare(b.name));
-  });
+    // Sort each group
+    Object.keys(groups).forEach(key => {
+      groups[key].sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    return { groupedStores: groups, storeCountTotal: countTotal };
+  }, [stores, isCashbackOnly]);
 
   // Determine subnavbar title
   const getSubnavTitle = () => {
