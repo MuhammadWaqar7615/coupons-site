@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 function Footer() {
   return (
-    <footer className="w-full bg-primary-dark pt-6 text-[12.5px] border-t border-gray-200">
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 pb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <footer className="w-full border-t border-[#174B80] bg-[#00285C] pt-7 text-[11px]">
+      <div className="mx-auto max-w-[1200px] px-4 pb-7 sm:px-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
 
           {/* Column 1: Negozi */}
           <div>
             <h4 className="font-bold text-accent mb-2.5">Negozi</h4>
-            <ul className="space-y-1 text-gray-300 leading-[15px]">
+            <ul className="space-y-1 text-blue-100/75 leading-[15px]">
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto HP</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto Alperia</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto Domestika</a></li>
@@ -25,7 +25,7 @@ function Footer() {
           {/* Column 2: Offerte */}
           <div>
             <h4 className="font-bold text-accent mb-2.5">Offerte</h4>
-            <ul className="space-y-1 text-gray-300 leading-[15px]">
+            <ul className="space-y-1 text-blue-100/75 leading-[15px]">
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto Back To School</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto Top</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Codici Sconto Informatica</a></li>
@@ -40,7 +40,7 @@ function Footer() {
           {/* Column 3: CodiceSconto */}
           <div>
             <h4 className="font-bold text-accent mb-2.5">CodiceSconto</h4>
-            <ul className="space-y-1 text-gray-300 leading-[15px]">
+            <ul className="space-y-1 text-blue-100/75 leading-[15px]">
               <li><a href="#" className="hover:text-accent transition-colors">Chi siamo</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Come funziona CodiceSconto</a></li>
               <li><a href="#" className="hover:text-accent transition-colors">Come funziona l&apos;estensione</a></li>
@@ -82,7 +82,7 @@ function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-footer-bar py-3 w-full border-t-2 border-footer-bar-border">
+      <div className="w-full border-t border-[#174B80] bg-[#001F4A] py-3">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center text-[11px] text-gray-300">
           <p>CodiceSconto &copy;08-26 - Imnoko S.r.l. IT02167140512</p>
           <div className="flex space-x-6 mt-2 md:mt-0">

@@ -15,6 +15,7 @@ export default async function Home() {
 
   let heroSlides = [];
   let heroBadges = [];
+  let categories = [];
   let featuredDeals = [];
   let secondaryDeals = [];
   let newCodes = [];
@@ -22,9 +23,10 @@ export default async function Home() {
   let promoBanner = null;
 
   try {
-    const [slidersRes, badgesRes, featuresRes, promoBannersRes] = await Promise.all([
+    const [slidersRes, badgesRes, categoriesRes, featuresRes, promoBannersRes] = await Promise.all([
       fetch(`${backendUrl}/api/sliders?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/badges`, { next: { revalidate: 60 } }).catch(() => null),
+      fetch(`${backendUrl}/api/categories?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/features`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/promo-banners?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
     ]);
@@ -49,6 +51,16 @@ export default async function Home() {
       }));
     }
 
+    if (categoriesRes && categoriesRes.ok) {
+      const categoriesData = await categoriesRes.json();
+      categories = (categoriesData.categories || []).map((category) => ({
+        id: category._id,
+        name: category.title || category.name || "",
+        image: category.image || "/images/placeholder.png",
+        link: category.slug ? `/offerte/${category.slug}` : "#",
+      }));
+    }
+
     if (featuresRes && featuresRes.ok) {
       const featuresData = await featuresRes.json();
       const features = featuresData.features || [];
@@ -63,6 +75,7 @@ export default async function Home() {
           title: feature.title || "",
           dealUrl: feature.storeId?.slug ? `/store/${feature.storeId.slug}` : "#",
           logo: feature.storeId?.logoPath || "",
+          image: feature.image || "/images/placeholder.png",
         }));
 
       secondaryDeals = features
@@ -111,7 +124,7 @@ export default async function Home() {
 
       <main className="flex-grow">
         <HeroSection initialSlides={heroSlides} initialBadges={heroBadges} />
-        <Banner />
+        <Banner initialCategories={categories} />
         <MosaicGrid deals={featuredDeals} />
         <SecondaryOffers deals={secondaryDeals} />
         <PromoBanner promoBanner={promoBanner} />

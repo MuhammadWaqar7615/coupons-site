@@ -4,20 +4,20 @@
   --background: #ffffff;
   --foreground: #171717;
   
-  --color-primary-dark: #1B2A4A;
-  --color-primary-dark-hover: #152238;
-  --color-primary-medium: #243B6A;
-  --color-accent: #E8446A;
-  --color-accent-hover: #D13A5C;
-  --color-accent-light: #FDEEF2;
-  --color-accent-muted: #F0A0B5;
-  --bg-main: #F8F9FC;
+  --color-primary-dark: #00285C;
+  --color-primary-dark-hover: #001F4A;
+  --color-primary-medium: #005FB7;
+  --color-accent: #FBD654;
+  --color-accent-hover: #F3CC43;
+  --color-accent-light: #FFF8D9;
+  --color-accent-muted: #F5E59A;
+  --bg-main: #F5F8FC;
   --bg-card: #FFFFFF;
-  --bg-section-light: #EEF1F6;
-  --bg-section-alt: #E4E8F0;
-  --bg-footer-bar: #131F38;
-  --color-footer-bar-border: #0F1A2E;
-  --color-social-bg: #4A5B7A;
+  --bg-section-light: #EDF3FA;
+  --bg-section-alt: #E3ECF6;
+  --bg-footer-bar: #001F4A;
+  --color-footer-bar-border: #001735;
+  --color-social-bg: #174B80;
 }
 
 @theme inline {

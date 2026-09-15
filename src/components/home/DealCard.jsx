@@ -22,11 +22,11 @@ function DealCard({ deal }) {
   return (
     <Link 
       href={targetUrl}
-      className="bg-white flex flex-col items-center h-[240px] hover:shadow-md transition-shadow cursor-pointer relative px-5 sm:px-6 group"
+      className="bg-white flex flex-col items-center h-[205px] hover:shadow-md transition-shadow cursor-pointer relative px-4 sm:px-5 group"
     >
       {/* Top Logo */}
-      <div className="w-full flex-1 flex justify-center items-start pt-6 sm:pt-8">
-        <div className="flex items-center justify-center w-full h-12 sm:h-14">
+      <div className="w-full flex-1 flex justify-center items-start pt-4 sm:pt-5">
+        <div className="flex items-center justify-center w-full h-10 sm:h-11">
           <img
             src={storeLogo}
             alt={storeName}
@@ -39,7 +39,7 @@ function DealCard({ deal }) {
       <div className="flex items-center justify-center w-full relative z-10">
         <div className="flex-grow border-t border-dashed border-accent"></div>
 
-        <div className="px-4 flex flex-col items-center justify-center min-w-[120px]">
+        <div className="px-3 flex flex-col items-center justify-center min-w-[105px]">
           {deal.labelTop && (
             <span className="text-[11px] font-bold text-gray-500 mb-0.5 uppercase tracking-wider">
               {deal.labelTop}
@@ -50,7 +50,7 @@ function DealCard({ deal }) {
             className={`${
               isTextOffer
                 ? "text-[15px] tracking-widest uppercase mt-1"
-                : "text-[36px]"
+                : "text-[30px]"
             } font-bold text-accent leading-none`}
           >
             {deal.discount}
@@ -67,7 +67,7 @@ function DealCard({ deal }) {
       </div>
 
       {/* Description */}
-      <div className="w-full flex-1 flex justify-center items-end pb-6 sm:pb-8 text-center px-1">
+      <div className="w-full flex-1 flex justify-center items-end pb-4 sm:pb-5 text-center px-1">
         <span className="text-gray-500 text-[11px] sm:text-[12px] group-hover:text-accent transition-colors leading-relaxed line-clamp-2">
           {deal.title}
         </span>

@@ -11,6 +11,7 @@ function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({ stores: [], coupons: [] });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchRef = useRef(null);
   const router = useRouter();
@@ -29,8 +30,8 @@ function Navbar() {
   const getNavLinkClass = (href) => {
     const isActive = pathname === href || pathname.startsWith(href + '/');
     return isActive
-      ? "text-[#005FB7] hover:text-[#00285C] text-[12.5px] font-bold uppercase tracking-wider transition-colors"
-      : "text-[#00285C] hover:text-[#005FB7] text-[12.5px] font-bold uppercase tracking-wider transition-colors";
+      ? "text-[#005FB7] hover:text-[#00285C] text-[10px] font-bold uppercase tracking-wide transition-colors"
+      : "text-[#00285C] hover:text-[#005FB7] text-[10px] font-bold uppercase tracking-wide transition-colors";
   };
 
   useEffect(() => {
@@ -114,22 +115,22 @@ function Navbar() {
 
   return (
     <nav className="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] border-b border-[#eaeaea] relative z-40">
-      <div className="max-w-[1240px] h-[76px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+      <div className="mx-auto flex min-h-[58px] max-w-[1240px] flex-wrap items-center gap-x-3 px-3 py-2 sm:px-5 lg:h-[58px] lg:flex-nowrap lg:px-6 lg:py-0">
         {/* Logo */}
-        <div className="flex-shrink-0 flex items-center">
+        <div className="order-2 flex flex-1 items-center justify-center lg:order-none lg:flex-initial lg:justify-start">
           <Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
             <img
               src="/images/logo-blue.png"
               alt="CodiceSconto Logo"
-              className="h-[42px] sm:h-[46px] w-auto object-contain"
+              className="h-[28px] w-auto object-contain sm:h-[31px] lg:h-[34px]"
             />
           </Link>
         </div>
 
         {/* Search */}
-        <div className="flex-1 mx-4 lg:mx-8 max-w-[480px]" ref={searchRef}>
+        <div className={`${isMobileSearchOpen ? 'block' : 'hidden'} order-4 mx-0 w-full max-w-none lg:order-none lg:mx-5 lg:block lg:flex-1 lg:max-w-[420px]`} ref={searchRef}>
           <form
-            className="w-full relative flex items-center bg-white rounded-full border border-[#D5DCE5] shadow-[0_2px_8px_rgba(0,0,0,0.06)] pl-3.5 pr-1.5 py-1 transition-all focus-within:border-[#005FB7] focus-within:ring-2 focus-within:ring-[#005FB7]/15"
+            className="relative flex w-full items-center rounded-full border border-[#E0E5EC] bg-[#F7F9FC] py-0.5 pl-3 pr-1 transition-all focus-within:border-[#005FB7] focus-within:ring-2 focus-within:ring-[#005FB7]/15"
             onSubmit={(e) => {
               e.preventDefault();
               if (selectedIndex >= 0 && allSuggestions[selectedIndex]?.url && allSuggestions[selectedIndex].url !== '#') {
@@ -144,7 +145,7 @@ function Navbar() {
             }}
           >
             {/* Left search icon */}
-            <svg className="h-[18px] w-[18px] text-[#00285C] mr-2.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-[14px] w-[14px] text-[#718096] mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
 
@@ -158,17 +159,17 @@ function Navbar() {
               }}
               onKeyDown={handleKeyDown}
               placeholder="Cerca negozi, marche o offerte..."
-              className="w-full bg-transparent border-none outline-none focus:outline-none text-[13px] text-gray-700 placeholder:text-gray-400 font-normal pr-2"
+              className="w-full bg-transparent border-none outline-none focus:outline-none text-[11px] text-gray-700 placeholder:text-gray-400 font-normal pr-2"
               autoComplete="off"
             />
 
             {/* Right circular yellow search button */}
             <button
               type="submit"
-              className="w-[34px] h-[34px] rounded-full bg-[#FBD654] hover:bg-[#f2cb42] flex items-center justify-center flex-shrink-0 cursor-pointer transition-all shadow-sm active:scale-95"
+              className="w-[28px] h-[28px] rounded-full bg-[#FBD654] hover:bg-[#f2cb42] flex items-center justify-center flex-shrink-0 cursor-pointer transition-all shadow-sm active:scale-95"
               aria-label="Cerca"
             >
-              <svg className="h-[15px] w-[15px] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-[13px] w-[13px] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
@@ -237,15 +238,15 @@ function Navbar() {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex lg:items-center space-x-[26px]">
+        <div className="order-3 hidden space-x-[19px] lg:order-none lg:flex lg:items-center">
           <Link href="/negozi" className={getNavLinkClass("/negozi")}>Negozi</Link>
           <Link href="/offerte" className={getNavLinkClass("/offerte")}>Offerte</Link>
           <Link href="/blog" className={getNavLinkClass("/blog")}>Blog</Link>
 
-          <div className="flex items-center space-x-[12px] pl-[10px]">
+          <div className="flex items-center space-x-2 pl-1">
             <Link
               href="/aggiungi-negozio"
-              className="inline-flex items-center space-x-1.5 bg-[#FBD654] hover:bg-[#f3cc43] text-[#00285C] px-[14px] py-[8px] rounded-[6px] text-[11.5px] font-bold uppercase tracking-wider transition-all shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center space-x-1 bg-[#FBD654] hover:bg-[#f3cc43] text-[#00285C] px-3 py-[6px] rounded-[4px] text-[9px] font-bold uppercase tracking-wide transition-all shadow-sm active:scale-[0.98]"
             >
               <svg className="w-3.5 h-3.5 stroke-[3] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -255,7 +256,7 @@ function Navbar() {
 
             <Link
               href={isAuthenticated ? "/dashboard" : "/account/login"}
-              className="inline-flex items-center space-x-1.5 bg-[#00285C] hover:bg-[#001f4a] text-white px-[16px] py-[8px] rounded-[6px] text-[11.5px] font-bold uppercase tracking-wider transition-all shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center space-x-1 bg-[#00285C] hover:bg-[#001f4a] text-white px-3 py-[6px] rounded-[4px] text-[9px] font-bold uppercase tracking-wide transition-all shadow-sm active:scale-[0.98]"
             >
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -266,10 +267,10 @@ function Navbar() {
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex items-center lg:hidden">
+        <div className="order-1 flex items-center lg:order-none lg:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-[#00285C] hover:text-[#005FB7] focus:outline-none p-2"
+            className="p-2 text-[#00285C] hover:text-[#005FB7] focus:outline-none"
             aria-label="Apri/Chiudi menù"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -280,6 +281,28 @@ function Navbar() {
               )}
             </svg>
           </button>
+        </div>
+
+        <div className="order-3 ml-auto flex items-center gap-1 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileSearchOpen((open) => !open)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[#00285C] hover:bg-[#EDF3FA] hover:text-[#005FB7]"
+            aria-label="Cerca"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
+            </svg>
+          </button>
+          <Link
+            href={isAuthenticated ? "/dashboard" : "/account/login"}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[#00285C] hover:bg-[#EDF3FA] hover:text-[#005FB7]"
+            aria-label={isAuthenticated ? "Dashboard" : "Accedi"}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </Link>
         </div>
       </div>
 
