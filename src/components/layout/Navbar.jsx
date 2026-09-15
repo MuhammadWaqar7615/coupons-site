@@ -29,8 +29,8 @@ function Navbar() {
   const getNavLinkClass = (href) => {
     const isActive = pathname === href || pathname.startsWith(href + '/');
     return isActive
-      ? "text-accent hover:text-accent-hover text-[12px] font-bold uppercase tracking-wide"
-      : "text-[#666666] hover:text-accent text-[12px] font-bold uppercase tracking-wide";
+      ? "text-[#005FB7] hover:text-[#00285C] text-[12.5px] font-bold uppercase tracking-wider transition-colors"
+      : "text-[#00285C] hover:text-[#005FB7] text-[12.5px] font-bold uppercase tracking-wider transition-colors";
   };
 
   useEffect(() => {
@@ -113,169 +113,207 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-[#eaeaea]">
-      <div className="max-w-[1200px] h-[100px] mx-auto pt-4 px-4 sm:px-6">
-        <div className="flex justify-between items-center h-[70px]">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center h-full py-2">
-            <Link href="/" className="flex items-center h-full" onClick={() => setIsOpen(false)}>
-              <img
-                src="/images/logo.png"
-                alt="CodiceSconto Logo"
-                className="h-[40px] w-auto object-contain hidden sm:block"
-              />
-            </Link>
-          </div>
+    <nav className="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] border-b border-[#eaeaea] relative z-40">
+      <div className="max-w-[1240px] h-[76px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex-shrink-0 flex items-center">
+          <Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
+            <img
+              src="/images/logo-blue.png"
+              alt="CodiceSconto Logo"
+              className="h-[42px] sm:h-[46px] w-auto object-contain"
+            />
+          </Link>
+        </div>
 
-          {/* Search */}
-          <div className="flex-1 mx-4 lg:mx-8 max-w-[450px]" ref={searchRef}>
-            <form
-              className="w-full flex relative"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (selectedIndex >= 0 && allSuggestions[selectedIndex]?.url && allSuggestions[selectedIndex].url !== '#') {
-                  const targetItem = allSuggestions[selectedIndex];
-                  setIsSearchOpen(false);
-                  setSearchQuery("");
-                  router.push(targetItem.url);
-                } else if (searchQuery.trim().length > 0) {
-                  setIsSearchOpen(false);
-                  router.push(`/cerca?q=${encodeURIComponent(searchQuery.trim())}`);
-                }
+        {/* Search */}
+        <div className="flex-1 mx-4 lg:mx-8 max-w-[480px]" ref={searchRef}>
+          <form
+            className="w-full relative flex items-center bg-white rounded-full border border-[#D5DCE5] shadow-[0_2px_8px_rgba(0,0,0,0.06)] pl-3.5 pr-1.5 py-1 transition-all focus-within:border-[#005FB7] focus-within:ring-2 focus-within:ring-[#005FB7]/15"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (selectedIndex >= 0 && allSuggestions[selectedIndex]?.url && allSuggestions[selectedIndex].url !== '#') {
+                const targetItem = allSuggestions[selectedIndex];
+                setIsSearchOpen(false);
+                setSearchQuery("");
+                router.push(targetItem.url);
+              } else if (searchQuery.trim().length > 0) {
+                setIsSearchOpen(false);
+                router.push(`/cerca?q=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }}
+          >
+            {/* Left search icon */}
+            <svg className="h-[18px] w-[18px] text-[#00285C] mr-2.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+
+            <input
+              type="text"
+              name="q"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchQuery.length >= 2) setIsSearchOpen(true);
               }}
-            >
-              <input
-                type="text"
-                name="q"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => {
-                  if (searchQuery.length >= 2) setIsSearchOpen(true);
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Cerca su CodiceSconto"
-                className="w-full border border-[#e5e5e5] rounded-[3px] py-[8px] px-4 pr-10 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-[13px] text-gray-700 placeholder-gray-400 bg-[#fbfbfb]"
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                className="absolute right-0 top-0 bottom-0 text-gray-500 w-10 flex items-center justify-center hover:text-accent cursor-pointer"
-                aria-label="Cerca"
-              >
-                <svg className="h-[16px] w-[16px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
+              onKeyDown={handleKeyDown}
+              placeholder="Cerca negozi, marche o offerte..."
+              className="w-full bg-transparent border-none outline-none focus:outline-none text-[13px] text-gray-700 placeholder:text-gray-400 font-normal pr-2"
+              autoComplete="off"
+            />
 
-              {/* Live Search Dropdown */}
-              {isSearchOpen && allSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white shadow-lg border border-gray-100 rounded-sm overflow-hidden z-50 flex flex-col max-h-[400px] overflow-y-auto">
-                  {searchResults.stores.length > 0 && (
-                    <div className="p-3 border-b border-gray-100">
-                      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Negozi</div>
-                      <div className="space-y-1">
-                        {searchResults.stores.map((store, idx) => {
-                          const isSelected = selectedIndex === idx;
-                          return (
-                            <Link
-                              key={store._id}
-                              href={`/store/${store.slug}`}
-                              onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
-                              className={`flex items-center p-2 rounded-sm transition-colors group ${isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
-                            >
-                              <div className="w-8 h-8 mr-3 flex items-center justify-center bg-white border border-gray-100 rounded-sm">
-                                {store.logoPath ? (
-                                  <img src={store.logoPath} alt={store.name} className="max-h-full max-w-full object-contain p-1" />
-                                ) : (
-                                  <span className="text-[10px] text-gray-400">Logo</span>
-                                )}
-                              </div>
-                              <span className={`text-[13px] font-medium transition-colors ${isSelected ? 'text-accent' : 'text-gray-700 group-hover:text-accent'}`}>{store.name}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {searchResults.coupons.length > 0 && (
-                    <div className="p-3">
-                      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Coupon</div>
-                      <div className="space-y-1">
-                        {searchResults.coupons.map((coupon, idx) => {
-                          const globalIdx = searchResults.stores.length + idx;
-                          const isSelected = selectedIndex === globalIdx;
-                          return (
-                            <Link
-                              key={coupon._id}
-                              href={`/store/${coupon.storeId?.slug || ''}`}
-                              onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
-                              className={`flex items-start p-2 rounded-sm transition-colors group ${isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <div className={`text-[13px] font-medium truncate transition-colors ${isSelected ? 'text-accent' : 'text-gray-700 group-hover:text-accent'}`}>
-                                  {coupon.title}
-                                </div>
-                                <div className="text-[11px] text-gray-500 truncate mt-0.5">
-                                  {coupon.storeId?.name || "Store"} &bull; {coupon.discount}
-                                </div>
-                              </div>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex lg:items-center space-x-[24px]">
-            <Link href="/negozi" className={getNavLinkClass("/negozi")}>Negozi</Link>
-            <Link href="/offerte" className={getNavLinkClass("/offerte")}>Offerte</Link>
-            <Link href="/blog" className={getNavLinkClass("/blog")}>Blog</Link>
-
-            <div className="flex items-center space-x-[8px] pl-[8px]">
-              <Link href="/aggiungi-negozio" className="border border-accent text-accent px-[12px] py-[6px] rounded-[3px] text-[11px] font-bold uppercase tracking-wide hover:bg-[#fcfafb] transition-colors">
-                Aggiungi negozio
-              </Link>
-              <Link href={isAuthenticated ? "/dashboard" : "/account/login"} className="bg-primary-dark text-white px-[16px] py-[7px] rounded-[3px] text-[11px] font-bold uppercase tracking-wide hover:bg-primary-dark-hover transition-colors">
-                {isAuthenticated ? "Dashboard" : "Accedi"}
-              </Link>
-            </div>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center lg:hidden">
+            {/* Right circular yellow search button */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-accent focus:outline-none p-2"
-              aria-label="Apri/Chiudi menù"
+              type="submit"
+              className="w-[34px] h-[34px] rounded-full bg-[#FBD654] hover:bg-[#f2cb42] flex items-center justify-center flex-shrink-0 cursor-pointer transition-all shadow-sm active:scale-95"
+              aria-label="Cerca"
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
+              <svg className="h-[15px] w-[15px] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
+
+            {/* Live Search Dropdown */}
+            {isSearchOpen && allSuggestions.length > 0 && (
+              <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white shadow-xl border border-gray-100 rounded-2xl overflow-hidden z-50 flex flex-col max-h-[400px] overflow-y-auto">
+                {searchResults.stores.length > 0 && (
+                  <div className="p-3 border-b border-gray-100">
+                    <div className="text-[11px] font-bold text-[#00285C]/60 uppercase tracking-wider mb-2">Negozi</div>
+                    <div className="space-y-1">
+                      {searchResults.stores.map((store, idx) => {
+                        const isSelected = selectedIndex === idx;
+                        return (
+                          <Link
+                            key={store._id}
+                            href={`/store/${store.slug}`}
+                            onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
+                            className={`flex items-center p-2 rounded-lg transition-colors group ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
+                          >
+                            <div className="w-8 h-8 mr-3 flex items-center justify-center bg-white border border-gray-100 rounded-md">
+                              {store.logoPath ? (
+                                <img src={store.logoPath} alt={store.name} className="max-h-full max-w-full object-contain p-1" />
+                              ) : (
+                                <span className="text-[10px] text-gray-400">Logo</span>
+                              )}
+                            </div>
+                            <span className={`text-[13px] font-medium transition-colors ${isSelected ? 'text-[#005FB7]' : 'text-gray-700 group-hover:text-[#005FB7]'}`}>{store.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {searchResults.coupons.length > 0 && (
+                  <div className="p-3">
+                    <div className="text-[11px] font-bold text-[#00285C]/60 uppercase tracking-wider mb-2">Coupon</div>
+                    <div className="space-y-1">
+                      {searchResults.coupons.map((coupon, idx) => {
+                        const globalIdx = searchResults.stores.length + idx;
+                        const isSelected = selectedIndex === globalIdx;
+                        return (
+                          <Link
+                            key={coupon._id}
+                            href={`/store/${coupon.storeId?.slug || ''}`}
+                            onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
+                            className={`flex items-start p-2 rounded-lg transition-colors group ${isSelected ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className={`text-[13px] font-medium truncate transition-colors ${isSelected ? 'text-[#005FB7]' : 'text-gray-700 group-hover:text-[#005FB7]'}`}>
+                                {coupon.title}
+                              </div>
+                              <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                                {coupon.storeId?.name || "Store"} &bull; {coupon.discount}
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex lg:items-center space-x-[26px]">
+          <Link href="/negozi" className={getNavLinkClass("/negozi")}>Negozi</Link>
+          <Link href="/offerte" className={getNavLinkClass("/offerte")}>Offerte</Link>
+          <Link href="/blog" className={getNavLinkClass("/blog")}>Blog</Link>
+
+          <div className="flex items-center space-x-[12px] pl-[10px]">
+            <Link
+              href="/aggiungi-negozio"
+              className="inline-flex items-center space-x-1.5 bg-[#FBD654] hover:bg-[#f3cc43] text-[#00285C] px-[14px] py-[8px] rounded-[6px] text-[11.5px] font-bold uppercase tracking-wider transition-all shadow-sm active:scale-[0.98]"
+            >
+              <svg className="w-3.5 h-3.5 stroke-[3] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Aggiungi negozio</span>
+            </Link>
+
+            <Link
+              href={isAuthenticated ? "/dashboard" : "/account/login"}
+              className="inline-flex items-center space-x-1.5 bg-[#00285C] hover:bg-[#001f4a] text-white px-[16px] py-[8px] rounded-[6px] text-[11.5px] font-bold uppercase tracking-wider transition-all shadow-sm active:scale-[0.98]"
+            >
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>{isAuthenticated ? "Dashboard" : "Accedi"}</span>
+            </Link>
           </div>
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="flex items-center lg:hidden">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-[#00285C] hover:text-[#005FB7] focus:outline-none p-2"
+            aria-label="Apri/Chiudi menù"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200 absolute w-full shadow-lg z-50">
-          <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link href="/negozi" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-[13px] font-bold uppercase text-gray-800 hover:text-accent hover:bg-gray-50 border-b border-gray-100">Negozi</Link>
-            <Link href="/offerte" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-[13px] font-bold uppercase text-gray-800 hover:text-accent hover:bg-gray-50 border-b border-gray-100">Offerte</Link>
-            <Link href="/blog" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-[13px] font-bold uppercase text-gray-800 hover:text-accent hover:bg-gray-50 border-b border-gray-100">Blog</Link>
-            <Link href="/aggiungi-negozio" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-[13px] font-bold uppercase text-accent hover:bg-gray-50 border-b border-gray-100">Aggiungi negozio</Link>
-            <Link href={isAuthenticated ? "/dashboard" : "/account/login"} onClick={() => setIsOpen(false)} className="block text-center mt-3 bg-primary-dark text-white px-3 py-3 rounded-sm text-[13px] font-bold uppercase hover:bg-primary-dark-hover">
-              {isAuthenticated ? "Dashboard" : "Accedi"}
-            </Link>
+        <div className="lg:hidden bg-white border-t border-gray-100 absolute w-full shadow-xl z-50 left-0">
+          <div className="px-5 pt-3 pb-6 space-y-2">
+            <Link href="/negozi" onClick={() => setIsOpen(false)} className="block px-3 py-2.5 rounded-md text-[13px] font-bold uppercase text-[#00285C] hover:text-[#005FB7] hover:bg-gray-50 border-b border-gray-100">Negozi</Link>
+            <Link href="/offerte" onClick={() => setIsOpen(false)} className="block px-3 py-2.5 rounded-md text-[13px] font-bold uppercase text-[#00285C] hover:text-[#005FB7] hover:bg-gray-50 border-b border-gray-100">Offerte</Link>
+            <Link href="/blog" onClick={() => setIsOpen(false)} className="block px-3 py-2.5 rounded-md text-[13px] font-bold uppercase text-[#00285C] hover:text-[#005FB7] hover:bg-gray-50 border-b border-gray-100">Blog</Link>
+            
+            <div className="pt-2 flex flex-col space-y-2">
+              <Link
+                href="/aggiungi-negozio"
+                onClick={() => setIsOpen(false)}
+                className="inline-flex items-center justify-center space-x-2 bg-[#FBD654] hover:bg-[#f3cc43] text-[#00285C] px-4 py-2.5 rounded-[6px] text-[12px] font-bold uppercase tracking-wide"
+              >
+                <svg className="w-3.5 h-3.5 stroke-[3] text-[#00285C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>Aggiungi negozio</span>
+              </Link>
+
+              <Link
+                href={isAuthenticated ? "/dashboard" : "/account/login"}
+                onClick={() => setIsOpen(false)}
+                className="inline-flex items-center justify-center space-x-2 bg-[#00285C] hover:bg-[#001f4a] text-white px-4 py-2.5 rounded-[6px] text-[12px] font-bold uppercase tracking-wide"
+              >
+                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>{isAuthenticated ? "Dashboard" : "Accedi"}</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}
