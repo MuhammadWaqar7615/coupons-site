@@ -85,7 +85,7 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
     <section className="bg-main pt-2 pb-3 sm:pt-3">
       <div className="w-full">
 
-        <div className="relative h-[270px] w-full overflow-hidden bg-[#0056a6] shadow-[0_8px_24px_rgba(0,40,92,0.16)] group sm:h-[315px] md:h-[350px]">
+        <div className="relative h-[500px] w-full overflow-hidden bg-[#0056a6] shadow-[0_8px_24px_rgba(0,40,92,0.16)] group sm:h-[500px] md:h-[500px]">
           {mockSlides.map((slide, index) => (
             <div
               key={slide.id}
@@ -94,12 +94,12 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
               <img
                 src={slide.image}
                 alt={`Slide ${slide.id}`}
-                className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
+                className="absolute inset-0 hidden h-full w-full object-center md:block"
               />
               <img
                 src={slide.mobileImage || slide.image}
                 alt={`Slide ${slide.id} mobile`}
-                className="absolute inset-0 h-full w-full object-cover object-center md:hidden"
+                className="absolute inset-0 h-full w-full  object-center md:hidden"
               />
             </div>
           ))}
