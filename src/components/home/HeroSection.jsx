@@ -34,6 +34,7 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
         setFetchedSlides((data.sliders || []).map((slider) => ({
           id: slider._id,
           image: slider.image,
+          mobileImage: slider.mobileImage || slider.image,
           logo: slider.logo || slider.image,
           text: slider.description || slider.title,
           discount: slider.discount || slider.title,
@@ -93,26 +94,13 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
               <img
                 src={slide.image}
                 alt={`Slide ${slide.id}`}
-                className="absolute inset-0 w-full h-full object-cover object-center"
+                className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#003d80]/90 via-[#0059aa]/65 to-transparent" />
-              <div className="relative z-10 flex h-full max-w-[53%] sm:max-w-[48%] flex-col justify-center px-6 sm:px-10 md:px-12 text-white">
-                <div className="mb-3 flex h-8 items-center">
-                  <img src={slide.logo} alt="Logo" className="max-h-full max-w-[145px] object-contain object-left brightness-0 invert" />
-                </div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#FBD654] sm:text-xs">
-                  Le migliori offerte, sempre con te
-                </p>
-                <h1 className="text-[29px] font-extrabold leading-[0.98] sm:text-[38px] md:text-[48px]">
-                  {slide.discount || "Risparmia ogni giorno"}
-                </h1>
-                <p className="mt-3 max-w-[330px] text-[12px] leading-relaxed text-white/90 sm:text-sm">
-                  {slide.text}
-                </p>
-                <a href={slide.link || "#"} className="mt-5 inline-flex w-fit items-center rounded-full bg-[#FBD654] px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-[#00285C] transition-colors hover:bg-white sm:text-[11px]">
-                  Scopri ora <span className="ml-2 text-base leading-none">&#8594;</span>
-                </a>
-              </div>
+              <img
+                src={slide.mobileImage || slide.image}
+                alt={`Slide ${slide.id} mobile`}
+                className="absolute inset-0 h-full w-full object-cover object-center md:hidden"
+              />
             </div>
           ))}
 

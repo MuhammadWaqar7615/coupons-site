@@ -38,10 +38,7 @@ export default async function Home() {
       heroSlides = (slidersData.sliders || []).map((slider) => ({
         id: slider._id,
         image: slider.image,
-        logo: slider.logo || slider.image,
-        text: slider.description || slider.title,
-        discount: slider.discount || slider.title,
-        link: slider.link || "#",
+        mobileImage: slider.mobileImage || slider.image,
       }));
     }
 
