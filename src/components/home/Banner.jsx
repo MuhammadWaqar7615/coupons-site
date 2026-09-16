@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-function Banner({ initialCategories }) {
+function Banner({ initialCategories, mainBanner: initialMainBanner }) {
   const [fetchedCategories, setFetchedCategories] = useState([]);
+  const [fetchedMainBanner, setFetchedMainBanner] = useState(null);
   const categories = initialCategories !== undefined ? initialCategories : fetchedCategories;
+  const mainBanner = initialMainBanner !== undefined ? initialMainBanner : fetchedMainBanner;
 
   useEffect(() => {
     if (initialCategories !== undefined) return undefined;
@@ -26,6 +28,26 @@ function Banner({ initialCategories }) {
       isMounted = false;
     };
   }, [initialCategories]);
+
+  useEffect(() => {
+    if (initialMainBanner !== undefined) return undefined;
+    let isMounted = true;
+    fetch("/api/main-banners?status=enabled")
+      .then((response) => (response.ok ? response.json() : { mainBanners: [] }))
+      .then((data) => {
+        if (isMounted) setFetchedMainBanner(data.mainBanners?.[0] || null);
+      })
+      .catch(() => {
+        if (isMounted) setFetchedMainBanner(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [initialMainBanner]);
+
+  const bannerImage = mainBanner?.image || "/images/back-to-school-2026.jpg";
+  const bannerName = mainBanner?.name || "Back to School Banner";
+  const bannerLink = mainBanner?.link || "#";
 
   return (
     <div className="w-full bg-main">
@@ -49,10 +71,10 @@ function Banner({ initialCategories }) {
           </section>
         )}
 
-        <a href="#" className="block w-full overflow-hidden rounded-[8px] transition-opacity hover:opacity-95">
+        <a href={bannerLink} className="block w-full overflow-hidden rounded-[8px] transition-opacity hover:opacity-95">
           <img
-            src="/images/back-to-school-2026.jpg"
-            alt="Back to School Banner"
+            src={bannerImage}
+            alt={mainBanner?.altText || bannerName}
             className="block h-auto w-full"
           />
         </a>

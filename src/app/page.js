@@ -21,14 +21,16 @@ export default async function Home() {
   let newCodes = [];
   let expiringCodes = [];
   let promoBanner = null;
+  let mainBanner = null;
 
   try {
-    const [slidersRes, badgesRes, categoriesRes, featuresRes, promoBannersRes] = await Promise.all([
+    const [slidersRes, badgesRes, categoriesRes, featuresRes, promoBannersRes, mainBannersRes] = await Promise.all([
       fetch(`${backendUrl}/api/sliders?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/badges`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/categories?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/features`, { next: { revalidate: 60 } }).catch(() => null),
       fetch(`${backendUrl}/api/promo-banners?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
+      fetch(`${backendUrl}/api/main-banners?status=enabled`, { next: { revalidate: 60 } }).catch(() => null),
     ]);
 
     if (slidersRes && slidersRes.ok) {
@@ -114,6 +116,11 @@ export default async function Home() {
       const promoData = await promoBannersRes.json();
       promoBanner = promoData.promoBanners?.[0] || null;
     }
+
+    if (mainBannersRes && mainBannersRes.ok) {
+      const mainBannerData = await mainBannersRes.json();
+      mainBanner = mainBannerData.mainBanners?.[0] || null;
+    }
   } catch (err) {
     console.error("Failed to prefetch homepage data on server:", err);
   }
@@ -124,7 +131,7 @@ export default async function Home() {
 
       <main className="flex-grow">
         <HeroSection initialSlides={heroSlides} initialBadges={heroBadges} />
-        <Banner initialCategories={categories} />
+        <Banner initialCategories={categories} mainBanner={mainBanner} />
         <MosaicGrid deals={featuredDeals} />
         <SecondaryOffers deals={secondaryDeals} />
         <PromoBanner promoBanner={promoBanner} />
