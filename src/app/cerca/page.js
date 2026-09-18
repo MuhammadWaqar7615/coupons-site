@@ -1,5 +1,8 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DealCard from "@/components/home/DealCard";
@@ -13,46 +16,53 @@ const safeDecode = (str) => {
   }
 };
 
-const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+function CercaContent() {
+  const searchParams = useSearchParams();
+  const q = searchParams.get("q") || "";
+  const query = safeDecode(q).trim();
 
-export async function generateMetadata({ searchParams }) {
-  const { q } = await searchParams;
-  const query = safeDecode(q || "").trim();
-  return {
-    title: query ? `Ricerca: ${query} | CodiceSconto` : "Cerca codici sconto | CodiceSconto",
-    description: `Cerca tra migliaia di codici sconto, coupon e offerte verificate per i tuoi negozi preferiti.`,
-  };
-}
+  const [stores, setStores] = useState([]);
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-export const dynamic = "force-dynamic";
-
-export default async function CercaPage({ searchParams }) {
-  const { q } = await searchParams;
-  const query = safeDecode(q || "").trim();
-
-  let stores = [];
-  let coupons = [];
-
-  if (query.length > 0) {
-    try {
-      const res = await fetch(
-        `${backendUrl}/api/search?q=${encodeURIComponent(query)}`,
-        { cache: "no-store" }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        stores = data.stores || [];
-        coupons = (data.coupons || []).map((c) => ({
-          ...c,
-          store: c.store?.name || c.storeId?.name || "Store",
-          logo: c.store?.logoPath || c.storeId?.logoPath || "/images/placeholder.png",
-          dealUrl: c.store?.slug || c.storeId?.slug ? `/store/${c.store?.slug || c.storeId?.slug}` : "#",
-        }));
-      }
-    } catch (err) {
-      console.error("Search fetch error:", err);
+  useEffect(() => {
+    if (!query) {
+      setStores([]);
+      setCoupons([]);
+      return;
     }
-  }
+
+    let isMounted = true;
+    setLoading(true);
+
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      .then((res) => (res.ok ? res.json() : { stores: [], coupons: [] }))
+      .then((data) => {
+        if (!isMounted) return;
+        setStores(data.stores || []);
+        setCoupons(
+          (data.coupons || []).map((c) => ({
+            ...c,
+            store: c.store?.name || c.storeId?.name || "Store",
+            logo: c.store?.logoPath || c.storeId?.logoPath || "/images/placeholder.png",
+            dealUrl:
+              c.store?.slug || c.storeId?.slug
+                ? `/store/${c.store?.slug || c.storeId?.slug}`
+                : "#",
+          }))
+        );
+      })
+      .catch((err) => {
+        console.error("Search fetch error:", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [query]);
 
   const hasResults = stores.length > 0 || coupons.length > 0;
 
@@ -110,7 +120,11 @@ export default async function CercaPage({ searchParams }) {
             </form>
           </div>
 
-          {!query ? (
+          {loading ? (
+            <div className="bg-white p-12 text-center rounded-md border border-gray-100 shadow-sm text-gray-500">
+              Ricerca in corso...
+            </div>
+          ) : !query ? (
             <div className="bg-white p-12 text-center rounded-md border border-gray-100 shadow-sm">
               <p className="text-gray-600 text-lg mb-2">Inserisci un termine di ricerca sopra.</p>
               <p className="text-gray-400 text-sm mb-6">
@@ -215,5 +229,21 @@ export default async function CercaPage({ searchParams }) {
 
       <Footer />
     </div>
+  );
+}
+
+export default function CercaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col min-h-screen bg-main">
+          <Navbar />
+          <div className="p-12 text-center text-gray-400">Caricamento...</div>
+          <Footer />
+        </div>
+      }
+    >
+      <CercaContent />
+    </Suspense>
   );
 }
