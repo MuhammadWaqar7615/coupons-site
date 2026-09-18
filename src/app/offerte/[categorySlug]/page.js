@@ -15,6 +15,24 @@ const safeDecode = (str) => {
 
 const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
 
+export async function generateStaticParams() {
+  const url = process.env.BACKEND_URL || "https://coupons-site-backend.vercel.app";
+  try {
+    const res = await fetch(`${url}/api/categories?status=enabled`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      const categories = data.categories || [];
+      const slugs = categories
+        .filter((c) => c.slug && c.slug.trim())
+        .map((c) => ({ categorySlug: c.slug.trim() }));
+      if (slugs.length > 0) return slugs;
+    }
+  } catch (err) {
+    console.warn("generateStaticParams categories fetch failed:", err);
+  }
+  return [{ categorySlug: "food" }, { categorySlug: "cycle" }];
+}
+
 export async function generateMetadata({ params }) {
   const { categorySlug } = await params;
   const decodedCatSlug = safeDecode(categorySlug);
@@ -48,17 +66,19 @@ export default async function CategoryPage({ params }) {
   const decodedCatSlug = safeDecode(categorySlug);
 
   // 1. Fetch category details
-  const catRes = await fetch(
-    `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
-    { next: { revalidate: 60 } }
-  );
-
-  if (!catRes.ok) {
-    notFound();
+  let category = null;
+  try {
+    const catRes = await fetch(
+      `${backendUrl}/api/categories/${encodeURIComponent(decodedCatSlug)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (catRes.ok) {
+      const catData = await catRes.json();
+      category = catData.category;
+    }
+  } catch (err) {
+    console.warn("Category fetch error:", err);
   }
-
-  const catData = await catRes.json();
-  const category = catData.category;
 
   if (!category || category.status !== "enabled") {
     notFound();

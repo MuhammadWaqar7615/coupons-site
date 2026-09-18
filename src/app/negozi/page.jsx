@@ -1,7 +1,5 @@
 import NegoziClient from "./NegoziClient";
 
-export const dynamic = "force-dynamic";
-
 export const metadata = {
   title: "Tutti i negozi e codici sconto | CodiceSconto",
   description: "Cerca e trova i migliori codici sconto e offerte dei tuoi negozi preferiti.",

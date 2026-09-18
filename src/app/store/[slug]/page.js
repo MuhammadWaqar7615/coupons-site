@@ -16,6 +16,24 @@ const safeDecode = (str) => {
   }
 };
 
+export async function generateStaticParams() {
+  const backendUrl = process.env.BACKEND_URL || "https://coupons-site-backend.vercel.app";
+  try {
+    const res = await fetch(`${backendUrl}/api/stores?active=true`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      const stores = data.stores || [];
+      const slugs = stores
+        .filter((s) => s.slug && s.slug.trim())
+        .map((s) => ({ slug: s.slug.trim() }));
+      if (slugs.length > 0) return slugs;
+    }
+  } catch (err) {
+    console.warn("generateStaticParams stores fetch failed:", err);
+  }
+  return [{ slug: "amazon" }, { slug: "nike" }];
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const decodedSlug = safeDecode(slug);
@@ -60,20 +78,19 @@ export default async function StorePage({ params }) {
   const { slug } = await params;
   const decodedSlug = safeDecode(slug);
 
-  const res = await fetch(
-    `${backendUrl}/api/stores/${encodeURIComponent(decodedSlug)}`,
-    { next: { revalidate: 60 } }
-  );
-
-  if (!res.ok) {
-    if (res.status === 404) {
-      notFound();
+  let store = null;
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/stores/${encodeURIComponent(decodedSlug)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      store = data.store;
     }
-    throw new Error("Failed to fetch store");
+  } catch (err) {
+    console.warn("Store fetch error:", err);
   }
-
-  const data = await res.json();
-  const store = data.store;
 
   if (!store || !store.isActive) {
     notFound();
