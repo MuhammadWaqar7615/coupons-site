@@ -20,6 +20,8 @@
 
 # production
 /build
+/static-export/
+*.zip
 
 # misc
 .DS_Store
