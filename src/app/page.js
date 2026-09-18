@@ -39,6 +39,7 @@ export default async function Home() {
         id: slider._id,
         image: slider.image,
         mobileImage: slider.mobileImage || slider.image,
+        link: slider.link || slider.url || "#",
       }));
     }
 

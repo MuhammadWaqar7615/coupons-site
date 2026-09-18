@@ -38,7 +38,7 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
           logo: slider.logo || slider.image,
           text: slider.description || slider.title,
           discount: slider.discount || slider.title,
-          link: slider.link || "#",
+          link: slider.link || slider.url || "#",
         })));
       })
       .catch((err) => console.error("Failed to fetch sliders/badges:", err));
@@ -81,28 +81,48 @@ function HeroSection({ initialBadges = [], initialSlides = [] }) {
     setCurrentSlide((prev) => (prev + 1) % mockSlides.length);
   };
 
+  const renderSlide = (slide, index) => {
+    const slideLink = slide.link || "#";
+    const isExternalLink = /^https?:\/\//i.test(slideLink);
+
+    const content = (
+      <>
+        <img
+          src={slide.image}
+          alt={`Slide ${slide.id}`}
+          className="absolute inset-0 hidden h-full w-full object-center md:block"
+        />
+        <img
+          src={slide.mobileImage || slide.image}
+          alt={`Slide ${slide.id} mobile`}
+          className="absolute inset-0 h-full w-full object-center md:hidden"
+        />
+      </>
+    );
+
+    if (!slideLink || slideLink === "#") {
+      return <div key={slide.id} className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>{content}</div>;
+    }
+
+    return (
+      <a
+        key={slide.id}
+        href={slideLink}
+        target={isExternalLink ? '_blank' : undefined}
+        rel={isExternalLink ? 'noopener noreferrer' : undefined}
+        className={`absolute inset-0 block transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+      >
+        {content}
+      </a>
+    );
+  };
+
   return (
     <section className="bg-main pt-2 pb-3 sm:pt-3">
       <div className="w-full">
 
         <div className="relative h-[500px] w-full overflow-hidden bg-[#0056a6] shadow-[0_8px_24px_rgba(0,40,92,0.16)] group sm:h-[500px] md:h-[500px]">
-          {mockSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            >
-              <img
-                src={slide.image}
-                alt={`Slide ${slide.id}`}
-                className="absolute inset-0 hidden h-full w-full object-center md:block"
-              />
-              <img
-                src={slide.mobileImage || slide.image}
-                alt={`Slide ${slide.id} mobile`}
-                className="absolute inset-0 h-full w-full  object-center md:hidden"
-              />
-            </div>
-          ))}
+          {mockSlides.map((slide, index) => renderSlide(slide, index))}
 
           {mockSlides.length > 1 && (
             <>
