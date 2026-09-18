@@ -1,6 +1,5 @@
 import NegoziClient from "./NegoziClient";
-
-export const dynamic = "force-dynamic";
+import { stores as fallbackStores } from "@/data/stores/storesData";
 
 export const metadata = {
   title: "Tutti i negozi e codici sconto | CodiceSconto",
@@ -10,7 +9,7 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function NegoziPage() {
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+  const backendUrl = process.env.BACKEND_URL || "https://coupons-site-backend.vercel.app";
   let stores = [];
   try {
     const res = await fetch(`${backendUrl}/api/stores?active=true`, {
@@ -24,5 +23,9 @@ export default async function NegoziPage() {
     console.error("Failed to fetch stores:", err);
   }
 
-  return <NegoziClient stores={stores} />;
+  // If backend returns few/no stores or is offline, supplement with full directory fallback stores
+  // so that all alphabet sections (#, A-Z) are fully populated in static export.
+  const finalStores = stores.length > 20 ? stores : [...stores, ...fallbackStores];
+
+  return <NegoziClient stores={finalStores} />;
 }
